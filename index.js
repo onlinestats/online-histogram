@@ -101,62 +101,73 @@ function Histogram (maxBins, toTrim) {
   const histogram = function histogram (x) {
     log('--')
     log(`Value: ${x}, current min: ${min}, max: ${max}`)
-    if (n === 0) {
-      // First case
-      hist[0] = 1
-      min = x
-      max = x
-    } else if (min === max) {
-      // Second case or more (if there were repeating values)
-      if (x === min) {
-        // Repeating value. We still don't know both min and max
-        hist[0] += 1
-      } else if (x > min) {
-        // New value is bigger than first one. Now we know max
-        hist[hist.length - 1] = 1
-        max = x
-      } else {
-        // New value is less than first one. We got min
-        // Need to move counter to the histogram tail
-        hist[hist.length - 1] = hist[0]
+
+    // Check if number
+    if (!isNaN(x)) {
+      if (typeof x !== 'number') {
+        x = parseFloat(x)
+      }
+
+      if (n === 0) {
+        // First case
         hist[0] = 1
         min = x
-      }
-    } else {
-      // Adding new element with known min/max
-      if (x > max) {
-        const scaleFactorMax = Math.ceil((x - max) / (max - min))
-        if (scaleFactorMax === 1) {
-          // We can try shifting histogram and then check if x > max one more time
-          // For example: [0, 0, 1, 1, 1] -> [1, 1, 1, 0, 0]
-          shiftRight()
-          if (x > max) {
-            // Still need scaling
+        max = x
+      } else if (min === max) {
+        // Second case or more (if there were repeating values)
+        if (x === min) {
+          // Repeating value. We still don't know both min and max
+          hist[0] += 1
+        } else if (x > min) {
+          // New value is bigger than first one. Now we know max
+          hist[hist.length - 1] = 1
+          max = x
+        } else {
+          // New value is less than first one. We got min
+          // Need to move counter to the histogram tail
+          hist[hist.length - 1] = hist[0]
+          hist[0] = 1
+          min = x
+        }
+      } else {
+        // Adding new element with known min/max
+        if (x > max) {
+          const scaleFactorMax = Math.ceil((x - max) / (max - min))
+          if (scaleFactorMax === 1) {
+            // We can try shifting histogram and then check if x > max one more time
+            // For example: [0, 0, 1, 1, 1] -> [1, 1, 1, 0, 0]
+            shiftRight()
+            if (x > max) {
+              // Still need scaling
+              scale(scaleFactorMax, x)
+            }
+          } else {
+            // Scale histogram
             scale(scaleFactorMax, x)
           }
-        } else {
-          // Scale histogram
-          scale(scaleFactorMax, x)
-        }
-      } else if (x < min) {
-        // Same algorithm as for x > max
-        const scaleFactorMin = Math.floor((x - min) / (max - min))
-        if (scaleFactorMin === -1) {
-          shiftLeft()
-          if (x < min) {
+        } else if (x < min) {
+          // Same algorithm as for x > max
+          const scaleFactorMin = Math.floor((x - min) / (max - min))
+          if (scaleFactorMin === -1) {
+            shiftLeft()
+            if (x < min) {
+              scale(scaleFactorMin, x)
+            }
+          } else {
             scale(scaleFactorMin, x)
           }
-        } else {
-          scale(scaleFactorMin, x)
-        }
-      } // *end of extremum cases
+        } // *end of extremum cases
 
-      // Now we can add a point to the histogram
-      add(x)
+        // Now we can add a point to the histogram
+        add(x)
+      }
+
+      log(hist)
+      n += 1
+    } else if (Array.isArray(x)) {
+      // Array passed as argument, apply histogram to each element
+      x.forEach(el => histogram(el))
     }
-
-    log(hist)
-    n += 1
     return hist
   }
 
