@@ -1,4 +1,4 @@
-const DEBUG = false
+const DEBUG = true
 
 function log () {
   if (DEBUG) {
@@ -25,6 +25,7 @@ function Histogram (maxBins = 20, toTrim = true, knownMin, knownMax) {
   function add (x) {
     let i = Math.floor((x - min) * maxBins / (max - min))
     log(`Add ${x} to pos: ${i}`)
+    log('Bins: ', bins, bins.length)
     log('Bin value: ', bins[i])
     if ((i > 0) && (x === bins[i])) {
       i -= 1
@@ -134,12 +135,14 @@ function Histogram (maxBins = 20, toTrim = true, knownMin, knownMax) {
           // New value is bigger than first one. Now we know max
           hist[hist.length - 1] = 1
           max = x
+          updateBins()
         } else {
           // New value is less than first one. We got min
           // Need to move counter to the histogram tail
           hist[hist.length - 1] = hist[0]
           hist[0] = 1
           min = x
+          updateBins()
         }
       } else {
         // Adding new element with known min/max
