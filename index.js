@@ -6,13 +6,20 @@ function log () {
   }
 }
 
-function Histogram (maxBins, toTrim) {
+function Histogram (maxBins = 20, toTrim = true, knownMin, knownMax) {
   let n = 0 // Total number of samples
   let hist = new Array(maxBins).fill(0) // Histogram
   let binSize = 0
   let bins = []
-  let max
   let min
+  let max
+
+  // Case when we know min and max
+  if ((typeof knownMin !== 'undefined') && (typeof knownMax !== 'undefined')) {
+    min = knownMin
+    max = knownMax
+    updateBins()
+  }
 
   // Add new point x to histogram
   function add (x) {
@@ -33,6 +40,15 @@ function Histogram (maxBins, toTrim) {
       results.push(arr.splice(0, chunkSize))
     }
     return results
+  }
+
+  // Calculate bins
+  function updateBins () {
+    binSize = (max - min) / maxBins
+    bins = []
+    for (let k = 0; k <= hist.length; k++) {
+      bins.push(min + k * binSize)
+    }
   }
 
   // Shift histogram transforming min, max and bins
@@ -89,12 +105,8 @@ function Histogram (maxBins, toTrim) {
     hist = chunk(longHist, absFactor + 1).map(arr => arr.reduce((a, b) => a + b, 0))
 
     log(`New max: ${max}, min: ${min}`)
-    binSize = (max - min) / maxBins
-    log('Bin-size: ', binSize)
-    bins = []
-    for (let k = 0; k <= hist.length; k++) {
-      bins.push(min + k * binSize)
-    }
+
+    updateBins()
     log('Bins: ', bins)
   }
 
@@ -108,8 +120,8 @@ function Histogram (maxBins, toTrim) {
         x = parseFloat(x)
       }
 
-      if (n === 0) {
-        // First case
+      if (typeof min === 'undefined') {
+        // First case with unknown min/max
         hist[0] = 1
         min = x
         max = x
