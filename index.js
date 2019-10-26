@@ -179,8 +179,10 @@ function Histogram (maxBins = 20, toTrim = true, knownMin, knownMax) {
     } else if (Array.isArray(x)) {
       // Array passed as argument, apply histogram to each element
       x.forEach(el => histogram(el))
+      return histogram.value
+    } else if (typeof x === 'undefined') {
+      return histogram.value
     }
-    return hist
   }
 
   histogram.fit = function (x) {
@@ -190,20 +192,35 @@ function Histogram (maxBins = 20, toTrim = true, knownMin, knownMax) {
   Object.defineProperty(histogram, 'value', {
     get: function () {
       let h = hist.slice(0)
+      let b = bins.slice(0)
 
       if (toTrim) {
         // Remove right zeros
         while (h[h.length - 1] === 0) {
           h.pop()
+          b.pop()
         }
 
         // Remove left zeros
         while (h[0] === 0) {
           h.shift()
+          b.shift()
         }
       }
 
-      return h
+      return [h, b]
+    }
+  })
+
+  Object.defineProperty(histogram, 'values', {
+    get: function () {
+      return histogram.value
+    }
+  })
+
+  Object.defineProperty(histogram, 'bins', {
+    get: function () {
+      return histogram.value[1]
     }
   })
 
@@ -215,25 +232,20 @@ function Histogram (maxBins = 20, toTrim = true, knownMin, knownMax) {
 
   Object.defineProperty(histogram, 'max', {
     get: function () {
-      return max
+      let b = histogram.bins
+      return b[b.length - 1]
     }
   })
 
   Object.defineProperty(histogram, 'min', {
     get: function () {
-      return min
+      return histogram.bins[0]
     }
   })
 
   Object.defineProperty(histogram, 'binSize', {
     get: function () {
       return binSize
-    }
-  })
-
-  Object.defineProperty(histogram, 'bins', {
-    get: function () {
-      return bins
     }
   })
 

@@ -16,4 +16,5 @@ hist(70)
 hist(75)
 hist(-4)
 
-console.log(hist.value)
+console.log(hist.value, hist.max, hist.min, hist.bins, hist.values)
+console.log(hist())

@@ -1,6 +1,6 @@
 {
   "name": "online-histogram",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Online (streaming) histogram calculation",
   "main": "index.js",
   "scripts": {
